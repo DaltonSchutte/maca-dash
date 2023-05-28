@@ -24,9 +24,9 @@ MERGE (yr:Year {year: toInteger(row.YearStarted)})
 MERGE (src:Source {source: row.AccountSource})
 MERGE (cs:CleanStatus {status: row.CleanStatus})
 MERGE (own:Ownership {ownership: row.Ownership})
-MERGE (ar:AnnualRevenue {annualRevenue:  
+MERGE (ar:AnnualRevenue {annualRevenue:
     (CASE
-     WHEN toInteger(row.AnnualRevenue)<10000 THEN '<10k'
+     WHEN toInteger(row.AnnualRevenue)<10000 THEN '<10M'
      WHEN 10000<=toInteger(row.AnnualRevenue)<20000 THEN '10M-20M'
      WHEN 20000<=toInteger(row.AnnualRevenue)<30000 THEN '20M-30M'
      WHEN 30000<=toInteger(row.AnnualRevenue)<40000 THEN '30M-40M'
@@ -82,7 +82,7 @@ REMOVE mgr.reportsToId;
 //
 // OPPORTUNITY
 //
-// Load opportunity info into nodes and create relationships in one transaction   
+// Load opportunity info into nodes and create relationships in one transaction
 LOAD CSV WITH HEADERS FROM "https://maca-screener.s3.us-east-2.amazonaws.com/Opportunity-Reduced.csv" as row
 MERGE (op:Opportunity {
     name: row.Name,
