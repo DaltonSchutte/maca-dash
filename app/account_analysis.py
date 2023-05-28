@@ -1,12 +1,9 @@
 from typing import (Dict, Optional)
 import re
 
-from pandas import DataFrame
-import plotly.figure_factory as ff
+import pandas as pd
 import plotly.express as px
 
-import streamlit as st
-import streamlit.components.v1 as components
 import pyvis
 
 import neo4j
@@ -117,7 +114,7 @@ def get_account_opportunities(acct_num: int):
         acct_num=acct_num,
         result_transformer_=neo4j.Result.data
     )
-    result = DataFrame().from_dict(result)
+    result = pd.DataFrame().from_dict(result)
     return result
 
 def preproc_results_dataframe(result):
@@ -157,38 +154,83 @@ def preproc_results_dataframe(result):
 
 
 def opportunity_summary(result):
-    closed_opps = result[result['Stage'].str.contains('Closed')]
+    """
+    Calculates summary statistics and produces graphs for the dashboard
+
+    TODO:
+        Separate into a stats function and a graph function.
+
+    Parameters
+    ----------
+    result : pd.DataFrame
+        Dataframe containing the opportunity data
+    """
+    total_opps = result[~result['Stage'].str.contains('Closed Lost')]
+    closed_won_opps = result[result['Stage'].str.contains('Closed Won')]
+    closed_lost_opps = result[result['Stage'].str.contains('Closed Lost')]
     open_opps = result[~result['Stage'].str.contains('Closed')]
     # Account value metrics
-    total_account_value = result['Amount (USD)'].sum()
-    closed_value = closed_opps['Amount (USD)'].sum()
+    total_account_value = total_opps['Amount (USD)'].sum()
+    closed_won_value = closed_won_opps['Amount (USD)'].sum()
+    closed_lost_value = closed_lost_opps['Amount (USD)'].sum()
     open_value = open_opps['Amount (USD)'].astype(int).sum()
-    pct_closed = closed_value / total_account_value
+    pct_closed = closed_won_value / total_account_value
+    pct_closed_won = closed_won_value / (closed_won_value + closed_lost_value)
     pct_open = open_value / total_account_value
 
     metrics = {
         "Total Account Value": total_account_value,
-        "Total Closed Opp Value": closed_value,
+        "Total Closed Won Opp Value": closed_won_value,
+        "Total Closed Lost Opp Value": closed_lost_value,
         "Total Open Opp Value": open_value,
         "% Total Value Closed": pct_closed,
+        "% Closed Value Won": pct_closed_won,
         "% Total Value Open": pct_open
     }
 
+    dfs = {
+        "TotalOpps": total_opps,
+        "ClosedWonOpps": closed_won_opps,
+        "ClosedLostOpps": closed_lost_opps,
+        "OpenOpps": open_opps
+    }
+
+    return metrics, dfs
+
+def opportunity_summary_graphs(dfs):
+    # Data formatting
+    total_opps = dfs['TotalOpps'][['Amount (USD)']]
+    closed_won_opps = dfs['ClosedWonOpps'][['Amount (USD)']]
+    closed_lost_opps = dfs['ClosedLostOpps'][['Amount (USD)']]
+    open_opps = dfs['OpenOpps'][['Amount (USD)']]
+
+    total_opps['Type'] = "Total Opps"
+    closed_won_opps['Type'] = "Closed Won Opps"
+    closed_lost_opps['Type'] = "Closed Lost Opps"
+    open_opps['Type'] = "Open Opps"
+
+    agg = pd.concat([
+        total_opps,
+        closed_won_opps,
+        closed_lost_opps,
+        open_opps
+    ])
+
     # Account value summary stats
-    value_dist_fig = ff.create_distplot(
-        [result['Amount (USD)'],
-         closed_opps['Amount (USD)'],
-         open_opps['Amount (USD)']
-        ],
-        ['All Opps', 'Closed Opps', 'Open Opps'],
-        bin_size=[0.25,0.25,0.25]
+    value_dist_fig = px.histogram(
+        agg,
+        x='Amount (USD)',
+        color='Type',
+        marginal='violin',
+        hover_data=agg.columns,
+        nbins=20
     )
     stage_pie_fig = px.pie(
-        result,
+        dfs['OpenOpps'],
         values='Amount (USD)',
         names='Stage'
     )
-    return metrics, value_dist_fig, stage_pie_fig
+    return value_dist_fig, stage_pie_fig
 
 
 def visualize_graph(
@@ -219,75 +261,3 @@ def visualize_graph(
         )
 
     return viz
-
-############
-# SETTINGS #
-############
-
-st.set_page_config(layout='wide')
-st.sidebar.markdown("# Maca Explorer")
-st.sidebar.markdown("---")
-st.sidebar.header('Graph Management')
-
-acct_num = st.sidebar.selectbox(
-    'Select an account:',
-    get_account_numbers()
-)
-physics = st.sidebar.checkbox(
-    'Toggle Graph Physics'
-)
-
-if acct_num:
-    subgraph = get_account_subgraph(acct_num)
-    opportunities = get_account_opportunities(acct_num)
-    opportunities = preproc_results_dataframe(opportunities)
-    metrics, dist_fig, pie_fig = opportunity_summary(opportunities)
-
-    # Account summary
-    f'# Company {acct_num}'
-    with st.container():
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.metric(
-                label='Total Account Value',
-                value='${:,.2f}'.format(metrics['Total Account Value'])
-            )
-        with col2:
-            st.metric(
-                label='Closed Opp Value',
-                value='${:,.2f}'.format(metrics['Total Closed Opp Value']),
-                delta='{:,.1f}%'.format(metrics['% Total Value Closed']*100),
-                delta_color='off'
-            )
-        with col3:
-            st.metric(
-                label='Open Opp Value',
-                value='${:,.2f}'.format(metrics['Total Open Opp Value']),
-                delta='{:,.1f}%'.format(metrics['% Total Value Open']*(-100)),
-                delta_color='off'
-            )
-
-    with st.container():
-        '## Distribution of Opportunity Values'
-        st.plotly_chart(dist_fig)
-        st.plotly_chart(pie_fig)
-
-    # Visualize account subgraph
-    viz = visualize_graph(subgraph)
-    viz.toggle_physics(physics)
-    html = viz.generate_html(
-        name=f'account{acct_num}.html',
-        local=True,
-        notebook=False
-    )
-    components.html(
-        html,
-        height=750,
-        width=750
-    )
-
-    # Opportunities dataframe
-    st.markdown("---\nOpportunities")
-    st.dataframe(opportunities)
-
