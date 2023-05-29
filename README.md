@@ -11,6 +11,13 @@ I used a tool called Snowfakery to create the synthetic data that this project i
 Once setup finishes, a browser window should open with a dashboard for you to explore! No additional work is necessary. There will be notebooks that walk through the model training process if you are curious about my approach to that.
 
 ## Notes
+- There are some accounts that will error out when selected in the Account
+  View. These are due to my sampling of the Opportunity.csv file from 50,000
+  alerts, where every account had at least one opportunity, to 20,000 so the
+  `setup-neo4j.sh` script would run in a reasonable amount of time. In a
+  production setting, there would of course be code to handle this edge case.
+  Likely, an account may not even exist to be queried if there is no
+  opportunity associated with it.
 
 
 ## Decisions and Rationale
