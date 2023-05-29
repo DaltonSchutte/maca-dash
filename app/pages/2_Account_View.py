@@ -14,6 +14,13 @@ st.set_page_config(
     page_icon="🏡"
 )
 st.sidebar.header("Account View")
+conn = GraphConnector()
+acct_num = st.sidebar.selectbox(
+    'Select an account:',
+    aa.get_account_numbers(conn)
+)
+conn.close()
+
 st.sidebar.markdown(
     """Navigation  
     - [Summary Statistics](#summary-statistics)  
@@ -23,18 +30,6 @@ st.sidebar.markdown(
     """
 )
 st.sidebar.markdown("---")
-
-conn = GraphConnector()
-acct_num = st.sidebar.selectbox(
-    'Select an account:',
-    aa.get_account_numbers(conn)
-)
-conn.close()
-
-st.sidebar.header('Graph Behavior')
-physics = not st.sidebar.checkbox(
-    'Disable Graph Physics'
-)
 
 if acct_num:
     try:
@@ -108,6 +103,9 @@ if acct_num:
 
     # Visualize account subgraph
     st.markdown('---\n## Account Graph')
+    physics = not st.checkbox(
+        'Disable Graph Physics'
+    )
     viz = aa.visualize_graph(subgraph)
     viz.toggle_physics(physics)
     html = viz.generate_html(

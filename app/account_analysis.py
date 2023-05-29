@@ -1,5 +1,6 @@
 from typing import (Dict, Optional)
 import re
+import warnings
 
 import pandas as pd
 import plotly.express as px
@@ -31,9 +32,9 @@ NODE_TEXT_PROPERTIES = {
 }
 
 
-#############
-# FUNCTIONS #
-#############
+#################
+# GET FUNCTIONS #
+#################
 
 def get_account_numbers(conn: GraphConnector):
     query = (
@@ -43,34 +44,6 @@ def get_account_numbers(conn: GraphConnector):
     )
     result = conn.query(query)
     return result.records[0][0]
-
-
-def get_node_labels(conn: GraphConnector):
-    """
-    Retrieves the node labels in the graph DB
-
-    RETURNS
-    -------
-    list[str]
-        List of node label strings
-    """
-    result = conn.query("CALL db.labels();")
-    labels = [l[0] for l in result]
-    return labels
-
-
-def get_edge_types(conn: GraphConnector):
-    """
-    Retrieves the edge types in the graph DB
-
-    RETURNS
-    -------
-    list[str]
-        List of edge type strings
-    """
-    result = conn.query("CALL db.relationshipTypes();")
-    types = [l[0] for l in result]
-    return types
 
 
 def get_account_subgraph(acct_num: int, conn: GraphConnector):
@@ -129,6 +102,11 @@ def get_account_opportunities(acct_num: int, conn: GraphConnector):
     result = pd.DataFrame().from_dict(result)
     return result
 
+
+#######################
+# DATA PROC FUNCTIONS #
+#######################
+
 def preproc_results_dataframe(result):
     result.columns = [
         'Opp Name',
@@ -157,11 +135,11 @@ def preproc_results_dataframe(result):
         'Contact Name',
         'Source'
     ]]
-    result['Amount (USD)'] = result['Amount (USD)'].astype(int)
+    result.loc[:,'Amount (USD)'] = result['Amount (USD)'].astype(int)
 
     # Remove date in Closed Date if Stage not Closed *
     idx = (~result['Stage'].str.contains('Closed'))
-    result['Closed Date'][idx] = ''
+    result.loc[idx, 'Closed Date'] = ''
     return result
 
 
@@ -187,7 +165,7 @@ def opportunity_summary(result):
     closed_lost_value = closed_lost_opps['Amount (USD)'].sum()
     open_value = open_opps['Amount (USD)'].astype(int).sum()
     pct_closed = closed_won_value / total_account_value
-    pct_closed_won = closed_won_value / (closed_won_value + closed_lost_value)
+    pct_closed_won = closed_won_value / (1+closed_won_value + closed_lost_value)
     pct_open = open_value / total_account_value
 
     metrics = {
@@ -209,6 +187,11 @@ def opportunity_summary(result):
 
     return metrics, dfs
 
+
+#################
+# VIZ FUNCTIONS #
+#################
+
 def opportunity_summary_graphs(dfs):
     # Data formatting
     total_opps = dfs['TotalOpps'][['Amount (USD)']]
@@ -216,10 +199,12 @@ def opportunity_summary_graphs(dfs):
     closed_lost_opps = dfs['ClosedLostOpps'][['Amount (USD)']]
     open_opps = dfs['OpenOpps'][['Amount (USD)']]
 
-    total_opps.loc[:,'Type'] = "Total Opps"
-    closed_won_opps.loc[:,'Type'] = "Closed Won Opps"
-    closed_lost_opps.loc[:,'Type'] = "Closed Lost Opps"
-    open_opps.loc[:,'Type'] = "Open Opps"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        total_opps.loc[:,'Type'] = "Total Opps"
+        closed_won_opps.loc[:,'Type'] = "Closed Won Opps"
+        closed_lost_opps.loc[:,'Type'] = "Closed Lost Opps"
+        open_opps.loc[:,'Type'] = "Open Opps"
 
     agg = pd.concat([
         total_opps,
