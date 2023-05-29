@@ -17,9 +17,8 @@ except:
 # GLOBALS #
 ###########
 
-CONN = GraphConnector()
 NODE_TEXT_PROPERTIES = {
-    "Account": "accountId",
+    "Account": "name",
     "AnnualRevenue": "annualRevenue",
     "CleanStatus": "status",
     "Contact": "name",
@@ -36,17 +35,17 @@ NODE_TEXT_PROPERTIES = {
 # FUNCTIONS #
 #############
 
-def get_account_numbers():
+def get_account_numbers(conn: GraphConnector):
     query = (
         "MATCH (acct:Account) "
         "WITH COLLECT(DISTINCT acct.accountId) AS acctIds "
         "RETURN acctIds"
     )
-    result = CONN.query(query)
+    result = conn.query(query)
     return result.records[0][0]
 
 
-def get_node_labels():
+def get_node_labels(conn: GraphConnector):
     """
     Retrieves the node labels in the graph DB
 
@@ -55,12 +54,12 @@ def get_node_labels():
     list[str]
         List of node label strings
     """
-    result = CONN.query("CALL db.labels();")
+    result = conn.query("CALL db.labels();")
     labels = [l[0] for l in result]
     return labels
 
 
-def get_edge_types():
+def get_edge_types(conn: GraphConnector):
     """
     Retrieves the edge types in the graph DB
 
@@ -69,12 +68,12 @@ def get_edge_types():
     list[str]
         List of edge type strings
     """
-    result = CONN.query("CALL db.relationshipTypes();")
+    result = conn.query("CALL db.relationshipTypes();")
     types = [l[0] for l in result]
     return types
 
 
-def get_account_subgraph(acct_num: int):
+def get_account_subgraph(acct_num: int, conn: GraphConnector):
     """
     Retrieves the subgraph for a specified account. Excludes any Opportunity
     nodes as they tend to clutter the visualization.
@@ -90,7 +89,7 @@ def get_account_subgraph(acct_num: int):
         "WHERE NOT n:Opportunity AND NOT m:Opportunity "
         "RETURN acct,r1,r2,con,n,m;"
     )
-    result = CONN.query(
+    result = conn.query(
         query,
         acct_num=acct_num,
         result_transformer_=neo4j.Result.graph
@@ -98,7 +97,20 @@ def get_account_subgraph(acct_num: int):
     return result
 
 
-def get_account_opportunities(acct_num: int):
+def get_node_company_name(acct_num: int, conn: GraphConnector):
+    query = (
+        "MATCH (acct:Account {accountId: $acct_num})"
+        "RETURN acct.name"
+    )
+    result = conn.query(
+        query,
+        acct_num=acct_num
+    )
+    company_name = result.records[0][0]
+    return company_name
+
+
+def get_account_opportunities(acct_num: int, conn: GraphConnector):
     query = (
         "MATCH (acct:Account {accountId: $acct_num})-[]-(opp:Opportunity) "
         "MATCH (opp)-[]-(con:Contact) "
@@ -109,7 +121,7 @@ def get_account_opportunities(acct_num: int):
         "opp.description, con.name, src.source, "
         "stg.stage, opt.type;"
     )
-    result = CONN.query(
+    result = conn.query(
         query,
         acct_num=acct_num,
         result_transformer_=neo4j.Result.data
@@ -204,10 +216,10 @@ def opportunity_summary_graphs(dfs):
     closed_lost_opps = dfs['ClosedLostOpps'][['Amount (USD)']]
     open_opps = dfs['OpenOpps'][['Amount (USD)']]
 
-    total_opps['Type'] = "Total Opps"
-    closed_won_opps['Type'] = "Closed Won Opps"
-    closed_lost_opps['Type'] = "Closed Lost Opps"
-    open_opps['Type'] = "Open Opps"
+    total_opps.loc[:,'Type'] = "Total Opps"
+    closed_won_opps.loc[:,'Type'] = "Closed Won Opps"
+    closed_lost_opps.loc[:,'Type'] = "Closed Lost Opps"
+    open_opps.loc[:,'Type'] = "Open Opps"
 
     agg = pd.concat([
         total_opps,
@@ -249,7 +261,7 @@ def visualize_graph(
         node_text = node[node_text_properties[node_label]]
         viz.add_node(
             node.element_id,
-            node_text,
+            str(node_text),
             group=node_label
         )
 
