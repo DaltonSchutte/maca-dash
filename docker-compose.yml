@@ -1,22 +1,46 @@
+version: '5'
+
 services:
-  db:
-    image: postgres
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/src
+  dashboard:
+    image: node:18-alpine
+    container_name: maca-dash
+    command:
+      - sudo neo4j start
+      - sh ./setup/setup-neo4h.sh
+      - pip install -r requirements.txt
+      - streamlit run ./app/Home.py
     ports:
-      - "8000:8000"
-    environment:
-      - POSTGRES_NAME=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - 3000:3000
+    working_dir: /app
+    volumes:
+      - ./:/app
     depends_on:
-      - db
+      - neo4j
+    networks:
+      - dash
+
+  neo4j:
+    image: neo4j:5.8.0-community
+    container_name: maca-neo4j
+    restart: unless-stopped
+    ports:
+      - 7474:7474
+      - 7687:7687
+    volumes:
+      - ./conf:/conf
+      - ./data:/data
+      - ./import:/import
+      - ./logs:/logs
+    environment:
+      - NEO4J_server.memory.pagecache.size=1G
+      - NEO4J_server.memory.heap.initial_size=1G
+      - NEO4J_server.memory.heap.max_size=1G
+      - NEO4J_AUTH=none
+    networks:
+      - dash
+
+volumes:
+  models:
+
+networks:
+  dash:
