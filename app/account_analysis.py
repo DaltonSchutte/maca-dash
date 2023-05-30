@@ -1,7 +1,9 @@
 from typing import (Dict, Optional)
 import re
+import json
 import warnings
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 
@@ -196,6 +198,44 @@ def opportunity_summary(result):
     return metrics, dfs
 
 
+def get_financial_sentiments(acct_num: int):
+    data = json.load(
+        open('./app/resources/sample_preds.json', 'r')
+    )
+    data = data[str(acct_num)]
+    return data
+
+
+def get_dist_stats_sentiment(data: list):
+    sentiments = np.array(data)
+    return {
+        'mean': sentiments.mean(),
+        'median': np.quantile(sentiments, 0.5),
+        'std': sentiments.std(),
+        'min': sentiments.min(),
+        'max': sentiments.max(),
+        '2.5%': np.quantile(sentiments, 0.025),
+        '25%': np.quantile(sentiments, 0.25),
+        '75%': np.quantile(sentiments, 0.75),
+        '97.5%': np.quantile(sentiments, 0.975)
+    }
+
+
+def interpret_value(val: float):
+    if -1.0<=val<-0.5:
+        return '10-K was very negative! Unlikely to be willing to spend.'
+    elif -0.5<=val<-0.3:
+        return '10-K was negative! May be willing to spend on key initiatives.'
+    elif -0.3<=val<0.0:
+        return '10-K was slightly negative! May require more persuasion to close deals.'
+    elif 0.0<=val<0.3:
+        return '10-K was slightly positive! Likely open to spending on initiatives.'
+    elif 0.3<=val<0.5:
+        return '10-K was positive! Probably eager to fund initiatives.'
+    elif 0.5<=val:
+        return '10-K was very positive! Likely actively looking for initiatives to invest in!'
+
+
 #################
 # VIZ FUNCTIONS #
 #################
@@ -266,3 +306,11 @@ def visualize_graph(
         )
 
     return viz
+
+
+def create_sentiment_dist(data):
+    fig = px.histogram(
+        data,
+        marginal='violin'
+    )
+    return fig

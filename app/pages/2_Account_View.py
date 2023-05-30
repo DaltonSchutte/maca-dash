@@ -126,6 +126,72 @@ if acct_num:
     # Advanced analytics
     st.markdown("---\n## Advanced Analytics")
 
-    st.markdown("### Financial Sentiment")
+    st.markdown("### 10-K Financial Sentiment Analysis")
+    if acct_num < 7:
+        sents = aa.get_financial_sentiments(acct_num)
+        stats = aa.get_dist_stats_sentiment(sents)
+        sent_dist_fig = aa.create_sentiment_dist(sents)
+
+        st.markdown(
+            """#### Distribution of Item 7 sentence sentiments for most recent 10-K"""
+        )
+        st.write(
+            """Values closer to 1 indicate a more positive sentiment. Values
+            closer to -1 indicate a more negative sentiment.
+            """
+        )
+        st.plotly_chart(sent_dist_fig)
+        with st.container():
+            c1,c2,c3,_,c4 = st.columns(5)
+            with c1:
+                st.metric(
+                    label="Lower 95%-CI",
+                    value=stats['2.5%'].round(4)
+                )
+            with c2:
+                st.metric(
+                    label="Mean Sentiment",
+                    value=stats['mean'].round(4)
+                )
+            with c3:
+                st.metric(
+                    label="Upper 95%-CI",
+                    value=stats['97.5%'].round(4)
+                )
+            with c4:
+                st.metric(
+                    label="Standard Deviation",
+                    value=stats['std'].round(4)
+                )
+        with st.container():
+            cs = st.columns(5)
+            pctl = ['min','25%','median','75%','max']
+
+            for p,c in zip(pctl, cs):
+                with c:
+                    st.metric(
+                        label=p.title(),
+                        value=stats[p].round(4)
+                    )
+        low_ci_interp = aa.interpret_value(
+            stats['mean']-stats['std']*1.96
+        )
+        mean_interp = aa.interpret_value(stats['mean'])
+        high_ci_interp = aa.interpret_value(
+            stats['mean']+stats['std']*1.96)
+
+        msg = (
+            f'''Based on the Item 7 (Executive Summary) for the most recent 10-K
+            filing, the following interpretations may be taken away:  
+             - From a worst of "{low_ci_interp}"  
+             - To a best of "{high_ci_interp}"  
+             - With a most probable being "{mean_interp}"'''
+        )
+        st.markdown(msg)
+        st.write(
+            """NOTE: These are possibilities based on a AI model's training on
+            historical 10-Ks and are merely to give a rough range of
+            possibilities that take recent fiscal events into account."""
+        )
 
     conn.close()
