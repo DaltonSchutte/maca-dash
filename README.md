@@ -9,22 +9,29 @@ the components and sections you will be interacting with. Similar to an
 introductory page someone might see when accessing a tool for the first time.
 
 ## Installation
-The initial setup can take a while (10-20 minutes) to complete due to the creation of the Neo4j database. The data that is used is stored on public S3 buckets, so if you want to take a look at the raw csv files you should be able to download them.
+The initial setup can take a while (10-20 minutes) to complete due to the creation of the Neo4j database and installation of many python packages (I would. The data that is used is stored on public S3 buckets, so if you want to take a look at the raw csv files you should be able to download them.
 
-This requires Neo4j server 5.8.0-community to be installed.
+This requires Python 3.10.6>= and Neo4j server 5.8.0-community to be installed.
 https://neo4j.com/docs/operations-manual/current/installation/
 
-Once Neo4j is installed, start it with:  
+Once Neo4j is installed, you will want to disable the password requirement:
+`sudo vim /etc/neo4h/neo4j.conf`
+and uncomment the line
+`dbms.security.auth_enabled=false`
+start neo4j with:  
 `sudo neo4j start`  
 and run  
-`./setup/setup-neo4j.sh`  
+`sudo sh ./setup/setup-neo4j.sh`  
 to prepare the database. Then, create a python enviornment, activate it, and install the requirements  
 `python3 -m venv env`  
-`pip install -r requirements.txt`
+`source env/bin/activate`
+`pip3 install -r requirements.txt`
 
 Finally, you can run jupyter and look at the notebooks in the `./models/training/` directory or run  
 `streamlit run ./app/Home.py`  
-to launch the dashboard.
+to launch the service.  
+
+If you set it up locally, a browser window or tab should just open with the dashboard homepage. If you are running it on a cloud server, you will need to copy the External URL it provides you to a browser window.
 
 ## Data
 ### SalesForce Data
@@ -88,7 +95,7 @@ Admitedly, I have very little experience with front-end development. I can use d
 The visualizations and analyses that I chose were based on what, in my experience, folks with a background other than statistics or analytics tend to have an easier time understanding intuitively. To that end, distributions are very powerful tools as are graphs. I used plotly because it is interactive and I believe that giving folks intuitive presentations of data with the means to explore it on their own helps them get what they need from it better than me trying to tell them what they need.
 
 ### 5) Areas for Improvement
-The integration tests with neo4j are completely lacking and the other tests are entirely absend. Adding those would go a long way to making the code base for extending this dashboard a lot easier and more streamlined. Some of the functions need to be refactored and split out into multiple functions. A number of them would also probably benefit from some abstraction. There are likely some areas where a more OOP approach would benefit the overall service.
+The integration tests with neo4j are completely lacking and the other tests are entirely absend. Adding those would go a long way to making the code base for extending this dashboard a lot easier and more streamlined. There are some checks in the `setup-neo4j.sh` file, type hints, and assertion statements that should be moved to actual pytest tests. Some of the functions need to be refactored and split out into multiple functions. A number of them would also probably benefit from some abstraction. There are likely some areas where a more OOP approach would benefit the overall service.
 
 There are also some places where more choices for visualization would be nice. Like allowing the user to pick combinations of variables to compare against each other and the such.
 
