@@ -11,7 +11,7 @@ st.sidebar.success("Select a View")
 
 st.markdown(
     """
-    Welcome to the SalesForce Explorer Analytics Dashboard!
+    Welcome to the SalesForce Analytics Dashboard!
 
     There are two views to choose:
     - Global View
@@ -22,6 +22,31 @@ st.markdown(
     strengths and weaknesses may lie.
 
     ## Global View
+    ### Opportunities Summary
+    This gives a high-level overview of all of the opportunities relevant to
+    the your team's bottom line. It also breaks out to show what the
+    distribution of open and won opportunities per account look like to give a
+    rough idea of where the overall performance is at.
+
+    ### Geographic Distribution
+    Here, an interactive map shows a heatmap distribution of where the open
+    opportunity value lies. Darker red indicates a higher density of potential
+    revenue. This can help determine if there is sufficient presence throughout
+    the areas you do business. This could inform which conferences you table at
+    or where you hire additional account managers.
+
+    ### Subscription Analysis
+    The two charts shown here give the number of new account subscriptions on a
+    daily basis and a distribution of the number of new subscriptions per day.
+    This can help detect trends early or try to identify patterns you can
+    leverage to change your sales plan.
+
+    #### Subscription Prediction
+    This uses a trained machine learning model to make a guess at the
+    likelihood that a client will become a subscriber for your product. Enter
+    as many values as you have data for and it will give a rough percentage
+    that the client will subscribe. Not meant to be a hard and fast rule, but
+    can help you decide where to allocate efforts based on historical data!
 
     ## Account View
     ### Summary Information and Visuals
@@ -57,15 +82,5 @@ st.markdown(
     may be more likely to spend on new projects! The "Financial Sentiment"
     comes from a Deep Neural Network that analyzes the SEC filings to predict
     how likely they are to spend based on recent earnings.
-    - an **"Opportunity Pricing"** model that uses fundamental data from the account
-    graph and the specific opportunity to make a rough prediction for the
-    expected value of the opportunity. This model is trained on thousands of
-    opportunities across hundreds of accounts and includes an error range. Not
-    meant to be taken as a truth, but rather to be used to guide discussions
-    based on prior similar opportunities with similar accounts.
-    - an **"Opportunity Success Likelihood"** that uses similar data and training
-    to the Opportunity Evaluation model above, but tries to determine the
-    likelihood that the opportunity will be closed in your favor. Again, this
-    is not to be taken as truth, but rather to help prioritize resources.
     """
 )
