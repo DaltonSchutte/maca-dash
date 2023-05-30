@@ -128,8 +128,4 @@ if acct_num:
 
     st.markdown("### Financial Sentiment")
 
-    st.markdown("### Opportunity Pricing")
-
-    st.markdown("### Opportunity Success Likelihood")
-
     conn.close()

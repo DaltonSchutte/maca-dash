@@ -46,7 +46,10 @@ def get_account_numbers(conn: GraphConnector):
     return result.records[0][0]
 
 
-def get_account_subgraph(acct_num: int, conn: GraphConnector):
+def get_account_subgraph(acct_num: int,
+                         conn: GraphConnector,
+                         allow_opps:bool=False
+                        ):
     """
     Retrieves the subgraph for a specified account. Excludes any Opportunity
     nodes as they tend to clutter the visualization.
@@ -62,6 +65,11 @@ def get_account_subgraph(acct_num: int, conn: GraphConnector):
         "WHERE NOT n:Opportunity AND NOT m:Opportunity "
         "RETURN acct,r1,r2,con,n,m;"
     )
+    if allow_opps:
+        query.replace(
+            "WHERE NOT n:Opportunity AND NOT m:Opportunity ",
+            ""
+        )
     result = conn.query(
         query,
         acct_num=acct_num,
