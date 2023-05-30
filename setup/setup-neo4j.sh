@@ -1,5 +1,14 @@
 #! /bin/bash
 
+force_flag=''
+
+while getopts 'f' flag;
+do
+    case "${flag}" in
+        f) force_flag='true' ;;
+    esac
+done
+
 exp_nodes=26148
 exp_edges=130000
 
@@ -21,7 +30,7 @@ get_size () {
 n_nodes=$(get_order)
 n_edges=$(get_size)
 
-if [ $n_nodes -eq $exp_nodes ] && [ $n_edges -eq $exp_edges ];
+if [ $n_nodes -eq $exp_nodes ] && [ $n_edges -eq $exp_edges ] && [ ! $force_flag ];
 then
 	echo "Graph present, will not attempt to rebuild..."
 else
