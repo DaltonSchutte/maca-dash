@@ -10,14 +10,21 @@ introductory page someone might see when accessing a tool for the first time.
 
 ## Installation
 The initial setup can take a while (10-20 minutes) to complete due to the creation of the Neo4j database. The data that is used is stored on public S3 buckets, so if you want to take a look at the raw csv files you should be able to download them.
-### Docker
-The repo can be cloned and from the project root `docker compose up` can be run which will set up and launch the service.
 
-### Manual Install
-If docker fails to work, the repo can be cloned and setup manually. It will
-require you to have Neo4j 5.8.0 installed. Start neo4j with `sudo neo4j start`
-and run the `./setup/setup-neo4j.sh` script to prepare the database. Then you
-will want to create a python enviornment, activate it, and run `pip install -r requirements.txt`. Finally, you can run jupyter and look at the notebooks in the `./models/training/` directory or run `streamlit run ./app/Home.py` to launch the dashboard.
+This requires Neo4j server 5.8.0-community to be installed.
+https://neo4j.com/docs/operations-manual/current/installation/
+
+Once Neo4j is installed, start it with:  
+`sudo neo4j start`  
+and run  
+`./setup/setup-neo4j.sh`  
+to prepare the database. Then, create a python enviornment, activate it, and install the requirements  
+`python3 -m venv env`  
+`pip install -r requirements.txt`
+
+Finally, you can run jupyter and look at the notebooks in the `./models/training/` directory or run  
+`streamlit run ./app/Home.py`  
+to launch the dashboard.
 
 ## Data
 ### SalesForce Data
