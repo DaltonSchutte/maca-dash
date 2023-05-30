@@ -25,7 +25,8 @@ st.sidebar.header("Global View")
 st.sidebar.markdown(
     """Navigation  
     - [Opportunities Summary](#opportunities-summary)  
-    - [Feature Distributions](#feature-distributions)  
+    - [Geographic Distribution](#geographic-distribution-of-opportunity-value)  
+    - [Subscription Analysis](#subscription-analysis)  
     """
 )
 st.sidebar.markdown("---")
@@ -93,38 +94,39 @@ st.plotly_chart(closed_opps_dist)
 st.markdown("---")
 
 # Pick a chart (maybe not useful)
-st.markdown('# Feature Distributions')
-node_or_edge = st.radio(
-    "Which category do you want to see a summary for?",
-    ("Nodes", "Edges")
-)
-
-if node_or_edge == "Nodes":
-    node_labels = ga.get_node_labels(conn)
-    label = st.selectbox(
-        "Select a Label:",
-        node_labels
-    )
-    node_props = ga.get_node_properties(conn, label)
-    prop = st.selectbox(
-        "Select a Property:",
-        node_props
-    )
-    dist = ga.get_distribution_adj_per_account(
-        conn,
-        adj_label=label,
-        adj_prop=prop
-    )
-    dist_fig = ga.create_distribution_chart(dist, 'COUNT(acct.accountId)')
-    st.plotly_chart(dist_fig)
-elif node_or_edge == "Edges":
-    edge_labels = ga.get_edge_types(conn)
-    label = st.selectbox(
-        "Select a Label:",
-        edge_labels
-    )
+#st.markdown('# Feature Distributions')
+#node_or_edge = st.radio(
+#    "Which category do you want to see a summary for?",
+#    ("Nodes", "Edges")
+#)
+#
+#if node_or_edge == "Nodes":
+#    node_labels = ga.get_node_labels(conn)
+#    label = st.selectbox(
+#        "Select a Label:",
+#        node_labels
+#    )
+#    node_props = ga.get_node_properties(conn, label)
+#    prop = st.selectbox(
+#        "Select a Property:",
+#        node_props
+#    )
+#    dist = ga.get_distribution_adj_per_account(
+#        conn,
+#        adj_label=label,
+#        adj_prop=prop
+#    )
+#    dist_fig = ga.create_distribution_chart(dist, 'COUNT(acct.accountId)')
+#    st.plotly_chart(dist_fig)
+#elif node_or_edge == "Edges":
+#    edge_labels = ga.get_edge_types(conn)
+#    label = st.selectbox(
+#        "Select a Label:",
+#        edge_labels
+#    )
 
 # Map viz
+st.markdown("# Geographic Distribution of Opportunity Value")
 open_value_per_state = ga.get_opp_value_per_state(conn)
 rename_col(
     open_value_per_state,
@@ -138,3 +140,93 @@ rename_col(
 )
 map_fig = ga.create_map_distribution_chart(open_value_per_state)
 st.pydeck_chart(map_fig)
+
+
+# Subscription Analysis
+st.markdown('# Subscription Analysis')
+sub_data = ga.sub_data_pipeline()
+
+st.markdown("## New Subscribers per Day")
+sma_periods = st.selectbox(
+    "Number of Days for Trendline",
+    [i for i in range(30)],
+    index=10
+)
+ts_fig, sub_dist_fig = ga.create_ts_dist_charts(sub_data, sma_periods)
+st.plotly_chart(ts_fig)
+
+st.markdown("## Distribution of Days by New Subscriber Count")
+st.plotly_chart(sub_dist_fig)
+
+st.markdown("## Correlation Analysis")
+st.write("This information is best viewed by zooming in. The labels will follow.")
+corr_fig = ga.correlation_heatmap(sub_data)
+st.plotly_chart(corr_fig, use_container_width=True)
+
+st.markdown("## Subscription Prediction")
+st.write(
+    """Provide the data below for a client to get an approximate likielihood
+    that they will become a subscriber within 6 weeks of having first
+    signed up for our service. Values can be typed into each field.
+    """
+)
+
+with st.container():
+    st.write("Number of tests passed per week")
+    cs = st.columns(6)
+    passes = {}
+    for i, ci in enumerate(cs, 1):
+        with ci:
+            n_pass = st.number_input(
+                f'Passes in Week {i}',
+                value=0
+            )
+            passes.update({f'num_passes_week_{i}': n_pass})
+
+with st.container():
+    st.write("Number of tests failed per week")
+    cs = st.columns(6)
+    failed = {}
+    for i, ci in enumerate(cs, 1):
+        with ci:
+            n_fail = st.number_input(
+                f'Failures in Week {i}',
+                value=0
+            )
+            failed.update({f'num_failures_week_{i}': n_fail})
+
+with st.container():
+    st.write("Total duration of all tests per week")
+    cs = st.columns(6)
+    duration = {}
+    for i, ci in enumerate(cs, 1):
+        with ci:
+            dur = st.number_input(f'Duration in Week {i}')
+            duration.update({f'sum_test_duration_{i}': dur})
+
+with st.container():
+    st.write("Number of new members added per week")
+    cs = st.columns(6)
+    members = {}
+    for i, ci in enumerate(cs, 1):
+        with ci:
+            mems = st.number_input(
+                f'New members in Week {i}',
+                value=0
+            )
+            members.update({f'num_new_members_added_week_{i}': mems})
+
+calculate = st.button('Predict')
+if calculate:
+    feature_vector = ga.build_feature_vector(
+        passes_feats=passes,
+        failed_feats=failed,
+        duration_feats=duration,
+        members_feats=members
+    )
+    model = ga.get_sub_model()
+    pred = ga.make_prediction(model, feature_vector)
+    msg = "### The approximate likelihood the user will subscribe is: {:.2f}%"\
+            .format(pred*100)
+    st.markdown(msg)
+    calculate = False
