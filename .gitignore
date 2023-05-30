@@ -209,3 +209,5 @@ tags
 [._]*.un~
 
 # End of https://www.toptal.com/developers/gitignore/api/python,vim,linux
+
+models/weights/financial-sentiment/
