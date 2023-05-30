@@ -15,17 +15,17 @@ This requires Python 3.10.6>= and Neo4j server 5.8.0-community to be installed.
 https://neo4j.com/docs/operations-manual/current/installation/
 
 Once Neo4j is installed, you will want to disable the password requirement:
-`sudo vim /etc/neo4h/neo4j.conf`
-and uncomment the line
-`dbms.security.auth_enabled=false`
+`sudo vim /etc/neo4h/neo4j.conf`  
+and uncomment the line  
+`dbms.security.auth_enabled=false`  
 start neo4j with:  
 `sudo neo4j start`  
 and run  
 `sudo sh ./setup/setup-neo4j.sh`  
 to prepare the database. Then, create a python enviornment, activate it, and install the requirements  
 `python3 -m venv env`  
-`source env/bin/activate`
-`pip3 install -r requirements.txt`
+`source env/bin/activate`  
+`pip3 install -r requirements.txt`  
 
 Finally, you can run jupyter and look at the notebooks in the `./models/training/` directory or run  
 `streamlit run ./app/Home.py`  
