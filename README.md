@@ -86,7 +86,7 @@ Below is the graph data model. Normally, this would be something we would iterat
 ### 2) The ML Models
 I chose the models to try and demonstrate a mix of very regimented, experiment driven development of predictive models and implementation of more sophisticated LLMs for more complex tasks. While I had some issues with the BERT-based Financial Sentiment model, I didn't want to spend too much time on it to the detriment of other areas. And, if need be, I can point to peer-reviewd papers I have published with more well-trained LLM models that I developed.
 
-I had planned to also include a graph neural network, or at least a graph embedding model, to really leverage the power of the graph database supporting the entire application. However, I prioritized documentation and other aspects that I felt would be a better learning experience for me (namely everything around the UI) rather than produce a third ML model.
+I had planned to also include a graph neural network (GNN), or at least a graph embedding model, to really leverage the power of the graph database supporting the entire application. The goal with the GNN was to have it learn what the account subgraphs look like and try to embed them in a low-dimensional hyperbolic space for visualization and analysis. In drug repurposing, we would analyze clusters to see what commonalities between drugs might make them effective for treating a condition. I wanted to apply a similar principle here to compare and analyze accounts. However, I prioritized documentation and other aspects that I felt would be a better learning experience for me (namely everything around the UI) rather than produce a third ML model.
 
 ### 3) Streamlit
 Admitedly, I have very little experience with front-end development. I can use d3.js and can trudge through writing HTML, CSS, and javascript files, but it is not my strong suit (though I would love to get better at it!) Streamlit was something a colleague had introduced me to in passing and this seemed like a good opportunity to give it a go. My rationale for this was because it looked nice and was very simple to implement while still forcing me to think about UX in ways I don't usually have to.
@@ -103,5 +103,7 @@ Ultimately, I got a bit too excited with the project and compiled a list of thin
 
 ### 6) Reflection
 Overall, this project was a lot of fun! I enjoyed myself a lot and learned a few things along the way that will be useful in my career. It helped me realize some areas where I could stand to improve my skills and refine others. In total, I spent somehwere between 20 and 25 hours on this.
+
+With more time, I would work on moving the existing assertions and checks to tests, writing a proper suite of tests, and training the GNN mentioned above.
 
 Thank you for the opportunity to work on this and I hope to discuss it with you!
