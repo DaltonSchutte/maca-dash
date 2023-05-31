@@ -67,6 +67,8 @@ Once setup finishes, a browser window should open with a dashboard for you to ex
   assigned companies from the S&P500 to the first 100 accounts. As such,
   none of the analysis for any of those accounts is reflective of the actual
   conditions for any of those companies.
+  
+- Financial Sentiment Analyses based on the 10-K filings are only available for the first 6 accounts in the Account View.
 
 - The synthetic data that was used to create the SalesForce dataset is somewhat
   predictable in ways. The structures for the account subgraphs from account to
@@ -84,7 +86,7 @@ Below is the graph data model. Normally, this would be something we would iterat
 ![](./assets/maca-graph-model.png)
 
 ### 2) The ML Models
-I chose the models to try and demonstrate a mix of very regimented, experiment driven development of predictive models and implementation of more sophisticated LLMs for more complex tasks. While I had some issues with the BERT-based Financial Sentiment model, I didn't want to spend too much time on it to the detriment of other areas. And, if need be, I can point to peer-reviewd papers I have published with more well-trained LLM models that I developed.
+I chose the models to try and demonstrate a mix of very regimented, experiment driven development of predictive models and implementation of more sophisticated LLMs for more complex tasks. While I had some issues with the BERT-based Financial Sentiment model, I didn't want to spend too much time trying to push it to SotA to the detriment of other areas. And, if need be, I can point to peer-reviewd papers I have published with more well-trained LLM models that I developed. The notebook `models/training/sub-model.ipynb` contains the best example of my typical approach to predictive modeling.
 
 I had planned to also include a graph neural network (GNN), or at least a graph embedding model, to really leverage the power of the graph database supporting the entire application. The goal with the GNN was to have it learn what the account subgraphs look like and try to embed them in a low-dimensional hyperbolic space for visualization and analysis. In drug repurposing, we would analyze clusters to see what commonalities between drugs might make them effective for treating a condition. I wanted to apply a similar principle here to compare and analyze accounts. However, I prioritized documentation and other aspects that I felt would be a better learning experience for me (namely everything around the UI) rather than produce a third ML model.
 
