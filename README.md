@@ -1,4 +1,4 @@
-# Maca-Dash
+# SalesForce-Dash
 
 The context for this dashboard is that it was created from the perspective of
 being asked to create a tool to help a sales team at a SaaS company better
@@ -83,7 +83,7 @@ I chose to use Neo4j for a couple reasons. One being that visualizing data in te
 
 Below is the graph data model. Normally, this would be something we would iterate on together with a laundry list of usecases and tests to be sure the model is satisfying all of the requirements. However, given the time constraints, I did a couple short iterations of my own trying to envision what the end user would want to see.
 
-![](./assets/maca-graph-model.png)
+![](./assets/graph-model.png)
 
 ### 2) The ML Models
 I chose the models to try and demonstrate a mix of very regimented, experiment driven development of predictive models and implementation of more sophisticated LLMs for more complex tasks. While I had some issues with the BERT-based Financial Sentiment model, I didn't want to spend too much time trying to push it to SotA to the detriment of other areas. And, if need be, I can point to peer-reviewd papers I have published with more well-trained LLM models that I developed. The notebook `models/training/sub-model.ipynb` contains the best example of my typical approach to predictive modeling.
