@@ -77,35 +77,4 @@ Once setup finishes, a browser window should open with a dashboard for you to ex
   Montana Spain 87615). This limited the analysis that could be done that would
   be useful and not just illustriative of making more plotly charts.
 
-## Decisions and Rationale
-### 1) Graph Database
-I chose to use Neo4j for a couple reasons. One being that visualizing data in terms of relationships between entities can be powerful and allows an individual to use their natural pattern recognition abilities with their expertise to see trends and relationships that would be considerably more difficult to notice in tabular data. Another being that, from a modeling and analytics perspective, relational data can be incredibly powerful and result in improved performance over models that just ingest rows of data. The main reason, however, is curiosity. I was curious to connect a dashboard to a graph database backend, as I've never done something quite like this before and certainly not using a graph database to power it. I am also curious to hear how you as folks with more experience with SalesForce and the problem Maca is trying to solve respond to the analytics contained in the dashboard and, generally, how the idea of using a graph for this problem sits with you.
-
-Below is the graph data model. Normally, this would be something we would iterate on together with a laundry list of usecases and tests to be sure the model is satisfying all of the requirements. However, given the time constraints, I did a couple short iterations of my own trying to envision what the end user would want to see.
-
 ![](./assets/maca-graph-model.png)
-
-### 2) The ML Models
-I chose the models to try and demonstrate a mix of very regimented, experiment driven development of predictive models and implementation of more sophisticated LLMs for more complex tasks. While I had some issues with the BERT-based Financial Sentiment model, I didn't want to spend too much time trying to push it to SotA to the detriment of other areas. And, if need be, I can point to peer-reviewd papers I have published with more well-trained LLM models that I developed. The notebook `models/training/sub-model.ipynb` contains the best example of my typical approach to predictive modeling.
-
-I had planned to also include a graph neural network (GNN), or at least a graph embedding model, to really leverage the power of the graph database supporting the entire application. The goal with the GNN was to have it learn what the account subgraphs look like and try to embed them in a low-dimensional hyperbolic space for visualization and analysis. In drug repurposing, we would analyze clusters to see what commonalities between drugs might make them effective for treating a condition. I wanted to apply a similar principle here to compare and analyze accounts. However, I prioritized documentation and other aspects that I felt would be a better learning experience for me (namely everything around the UI) rather than produce a third ML model.
-
-### 3) Streamlit
-Admitedly, I have very little experience with front-end development. I can use d3.js and can trudge through writing HTML, CSS, and javascript files, but it is not my strong suit (though I would love to get better at it!) Streamlit was something a colleague had introduced me to in passing and this seemed like a good opportunity to give it a go. My rationale for this was because it looked nice and was very simple to implement while still forcing me to think about UX in ways I don't usually have to.
-
-### 4) Visualizations
-The visualizations and analyses that I chose were based on what, in my experience, folks with a background other than statistics or analytics tend to have an easier time understanding intuitively. To that end, distributions are very powerful tools as are graphs. I used plotly because it is interactive and I believe that giving folks intuitive presentations of data with the means to explore it on their own helps them get what they need from it better than me trying to tell them what they need.
-
-### 5) Areas for Improvement
-The integration tests with neo4j are completely lacking and the other tests are entirely absend. Adding those would go a long way to making the code base for extending this dashboard a lot easier and more streamlined. There are some checks in the `setup-neo4j.sh` file, type hints, and assertion statements that should be moved to actual pytest tests. Some of the functions need to be refactored and split out into multiple functions. A number of them would also probably benefit from some abstraction. There are likely some areas where a more OOP approach would benefit the overall service.
-
-There are also some places where more choices for visualization would be nice. Like allowing the user to pick combinations of variables to compare against each other and the such.
-
-Ultimately, I got a bit too excited with the project and compiled a list of things to do that was rather impractical for a 6 day screening project and left some aspects of the work underdevelope.
-
-### 6) Reflection
-Overall, this project was a lot of fun! I enjoyed myself a lot and learned a few things along the way that will be useful in my career. It helped me realize some areas where I could stand to improve my skills and refine others. In total, I spent somehwere between 20 and 25 hours on this.
-
-With more time, I would work on moving the existing assertions and checks to tests, writing a proper suite of tests, and training the GNN mentioned above.
-
-Thank you for the opportunity to work on this and I hope to discuss it with you!
